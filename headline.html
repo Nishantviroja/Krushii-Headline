@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON Previewer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script defer src="script.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Anek+Gujarati:wght@400;600&display=swap');
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+    
+    .gujarati-text {
+      font-family: 'Anek Gujarati', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 flex justify-center items-center min-h-screen">
+  <div class="bg-white shadow-lg rounded-lg p-6 w-full max-w-6xl">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-gray-700">JSON Previewer</h1>
+      <div class="flex gap-2">
+        <button id="copyJsonButton" onclick="copyJsonToClipboard()" class="bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-800 flex items-center gap-2">
+          Copy JSON
+        </button>
+        <!-- Headline Button -->
+        <button onclick="redirectToHeadline()" class="bg-green-800 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center gap-2">
+          Headline
+        </button>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- JSON Input Form -->
+      <div>
+        <label for="jsonInput" class="block text-lg font-medium text-gray-700 mb-2">JSON Input Form:</label>
+        <form id="jsonInputForm" class="space-y-4" oninput="updateJSONPreview()">
+          <div>
+            <label for="img" class="block text-sm font-medium text-gray-700">Image URL:</label>
+            <input type="url" id="img" class="border border-gray-300 rounded-lg p-4 w-full bg-gray-50" placeholder="Enter image URL" value="https://res.cloudinary.com/dbuifvtce/image/upload/t_krushilogo/v1739963372/Group_1000003274_brlstw.png" required>
+          </div>
+          <div>
+            <label for="title" class="block text-sm font-medium text-gray-700">Title:</label>
+            <input type="text" id="title" class="border border-gray-300 rounded-lg p-4 w-full bg-gray-50" placeholder="Enter title" required>
+          </div>
+          <div>
+            <label for="date" class="block text-sm font-medium text-gray-700">Date:</label>
+            <input type="date" id="date" class="border border-gray-300 rounded-lg p-4 w-full bg-gray-50" value="2024-12-01" required>
+          </div>
+          <!-- Categories Dropdown -->
+          <div>
+            <label for="categories" class="block text-sm font-medium text-gray-700">Categories:</label>
+            <select id="categories" class="border border-gray-300 rounded-lg p-4 w-full bg-gray-50" required>
+              <option value="એગ્રી પીડિયા" selected>એગ્રી પીડિયા</option>
+              <option value="ખેતીવાડી યોજના">ખેતીવાડી યોજના</option>
+              <option value="ખેતર મશીનરી">ખેતર મશીનરી</option>
+              <option value="પશુપાલન">પશુપાલન</option>
+              <option value="કૃષિ બજાર">કૃષિ બજાર</option>
+              <option value="વરસાદ અને મોસમ">વરસાદ અને મોસમ</option>
+            </select>
+          </div>
+          <div>
+            <label for="description" class="block text-sm font-medium text-gray-700">Description:</label>
+            <textarea id="description" class="border border-gray-300 rounded-lg p-4 w-full bg-gray-50" rows="4" placeholder="Enter description" required></textarea>
+          </div>
+        </form>
+      </div>
+      <!-- JSON Preview Card -->
+      <div>
+        <label for="jsonPreview" class="block text-lg font-medium text-gray-700 mb-2">JSON Preview:</label>
+        <div id="jsonPreview" class="border border-gray-300 rounded-lg p-6 bg-blue-50 min-h-[200px] w-full overflow-y-auto gujarati-text">
+          <!-- Preview content will be inserted here -->
+        </div>
+      </div>
+    </div>
+    
+    <!-- JSON Record Section -->
+    <div class="mt-8">
+      <h2 class="text-lg font-semibold text-gray-700 mb-2">JSON Record:</h2>
+      <pre id="jsonRecord" class="border border-gray-300 rounded-lg p-4 bg-gray-50 font-mono text-sm whitespace-pre-wrap gujarati-text overflow-auto">
+        <!-- The JSON content will be dynamically updated here -->
+      </pre>
+    </div>
+  </div>
+
+  <script>
+    const jsonInputForm = document.getElementById('jsonInputForm');
+    const jsonPreview = document.getElementById('jsonPreview');
+    const jsonRecord = document.getElementById('jsonRecord');
+  
+    // Function to format date as dd/mm/yyyy
+    function formatDate(date) {
+      const d = new Date(date);
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+      const year = d.getFullYear();
+      return `${day}/${month}/${year}`;
+    }
+  
+    // Function to update the JSON preview dynamically
+    function updateJSONPreview() {
+      const imgUrl = document.getElementById('img').value;
+      const title = document.getElementById('title').value;
+      let date = document.getElementById('date').value;
+      const categories = document.getElementById('categories').value;
+      let description = document.getElementById('description').value;
+  
+      // Remove newline characters from the description to prevent them from appearing in the JSON
+      description = description.replace(/\n/g, '').replace(/\r/g, '');
+  
+      // Format the date
+      date = formatDate(date); // Formatting the date
+  
+      if (imgUrl && date && categories) {
+        // Generate the card preview from form data
+        jsonPreview.innerHTML = `
+          <div class="max-w-md mx-auto bg-white shadow-md rounded-lg overflow-hidden">
+            <img src="${imgUrl}" alt="Image" class="w-full object-cover">
+            <div class="p-4">
+              <p class="text-gray-600 text-sm inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-red-600/10 ring-inset">${date}</p>
+              <p class="text-gray-600 text-sm inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-green-700/10 ring-inset">${categories}</p>
+              <h2 class="mt-2 text-xl font-semibold text-gray-800">${title}</h2>
+              <div class="mt-2" id="description">${description}</div>
+            </div>
+          </div>
+        `;
+  
+        // Update JSON Record display
+        const jsonData = {
+          img: imgUrl,
+          title: title,
+          date: date,
+          categories: categories,
+          description: description
+        };
+        
+        jsonRecord.textContent = JSON.stringify(jsonData, null, 2); // Pretty-print the JSON data
+      } else {
+        jsonPreview.innerHTML = "<p class='text-red-500'>Please fill out all fields!</p>";
+        jsonRecord.textContent = "";
+      }
+    }
+  
+    // Function to copy the generated JSON data to the clipboard
+    function copyJsonToClipboard() {
+      const textToCopy = jsonRecord.textContent;
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        alert('JSON copied to clipboard!');
+      });
+    }
+  
+    // Function to redirect to headline.html
+    function redirectToHeadline() {
+      window.location.href = 'index.html';
+    }
+  
+    // Initialize default date as today's date in dd/mm/yyyy format
+    const today = new Date();
+    const formattedDate = formatDate(today);
+    document.getElementById('date').value = today.toISOString().split('T')[0]; // Set the input value to today's date
+  
+    // Update preview on load
+    updateJSONPreview();
+  </script>
+  
+</body>
+</html>

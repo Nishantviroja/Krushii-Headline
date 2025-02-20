@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Krushii Headline</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Anek+Gujarati:wght@400;600&display=swap');
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+    
+    .gujarati-text {
+      font-family: 'Anek Gujarati', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 flex justify-center items-center min-h-screen ">
+  <div class="bg-white shadow-lg rounded-lg p-6 w-full max-w-6xl">
+    <div class="flex justify-between items-center mb-6">
+      <div class="gap-2">
+      <h1 class="text-2xl font-bold text-gray-700">Krushii Headline</h1>
+      <p id="totalCount" class="text-gray-600 mb-6 text-sm"></p>
+    </div>
+      <div class="flex gap-2">
+        <button onclick="window.location.href='headline.html'" class="bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-800">
+          Create Headline
+        </button>
+      </div>
+    </div>
+
+    <!-- Total Records Count -->
+    <p id="totalCount" class="text-gray-600 mb-6"></p>
+
+    <!-- Headline Cards Section -->
+    <div id="headlineCards" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+      <!-- Cards will be inserted here dynamically -->
+    </div>
+  </div>
+
+  <!-- Modal Popup (Tailwind CSS Modal) -->
+  <div id="modal" class="fixed inset-0 bg-gray-500/75 transition-opacity hidden">
+    <div class="fixed inset-0 z-10 w-screen overflow-y-auto flex items-center justify-center p-4">
+      <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:w-full sm:max-w-lg">
+        
+        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 overflow-auto h-[90vh]">
+          
+            
+                
+                <div id="modalContent" class="mt-2 ">
+                  <!-- Dynamic content will be inserted here -->
+                </div>
+            
+        </div>
+
+        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+          <button type="button" onclick="closeModal()" class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-blue-500 sm:ml-3 sm:w-auto">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const jsonUrl = 'https://raw.githubusercontent.com/mit702/Krushii/d6c33e83e03e45eadb273de0dbf9f6c81316b78e/headline.json';
+    
+    async function fetchHeadlines() {
+      try {
+        const response = await fetch(jsonUrl);
+        const data = await response.json();
+        
+        // Log the data to understand its structure
+        console.log(data);
+        
+        // If the data is an object with a "headlines" property, access that
+        const headlines = data.headline;
+        
+        // Show total record count
+        const totalCount = document.getElementById('totalCount');
+        totalCount.innerHTML = `${headlines.length} headlines found`;
+
+        // If the fetched data is an array, proceed to create cards
+        if (Array.isArray(headlines)) {
+          const headlineCards = document.getElementById('headlineCards');
+          
+          headlines.forEach((headline, index) => {
+            const card = document.createElement('div');
+            card.classList.add('max-w-sm', 'rounded-lg', 'overflow-hidden', 'shadow-lg', 'bg-white');
+            
+            card.innerHTML = `
+              <img src="${headline.img}" alt="Headline Image" class="w-full object-cover">
+              <div class="p-4">
+                  <p class="text-gray-600 text-sm inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-red-600/10 ring-inset">${headline.date}</p>
+                  <h2 class="mt-2 text-xl font-semibold text-gray-800 gujarati-text">${headline.title}</h2>
+              </div>
+            `;
+            
+            // Add event listener to open modal on card click
+            card.addEventListener('click', () => openModal(headline));
+            
+            // Append the card to the container
+            headlineCards.appendChild(card);
+          });
+        } else {
+          console.error('Data is not an array:', headlines);
+        }
+      } catch (error) {
+        console.error('Error fetching headline data:', error);
+      }
+    }
+
+    // Function to open modal and show clicked card data
+    function openModal(headline) {
+      const modal = document.getElementById('modal');
+      const modalContent = document.getElementById('modalContent');
+      
+      modal.style.display = 'flex'; // Show modal
+
+      // Insert the headline content into the modal
+      modalContent.innerHTML = `
+        <div class="flex flex-col gap-4">
+          <img src="${headline.img}" alt="Headline Image" class="w-full object-cover rounded-lg">
+          <h2 class="mt-2 text-xl font-semibold text-gray-800 gujarati-text">${headline.title}</h2>
+          <p class="text-gray-600 text-sm ">${headline.date}</p>
+          <div class="mt-2 gujarati-text" id="description">${headline.description}</div>
+        </div>
+      `;
+    }
+
+    // Function to close the modal
+    function closeModal() {
+      const modal = document.getElementById('modal');
+      modal.style.display = 'none'; // Hide modal
+    }
+    
+    // Fetch and display headlines when the page loads
+    fetchHeadlines();
+  </script>
+</body>
+</html>
