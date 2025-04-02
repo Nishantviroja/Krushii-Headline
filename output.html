@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Output Page</title>
+
+    <style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+@import url('https://fonts.googleapis.com/css2?family=Anek+Gujarati:wght@100..800&display=swap');
+
+        body {
+            font-family: "Poppins", sans-serif;
+           
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: rgb(221 214 254);
+
+        }
+    
+    
+
+        .containerImg {
+           
+            /* height: 1080px; */
+            width: 1080px;
+            position: relative;
+            /* left: -1220px; */
+            top: -239000px;
+        }
+
+        .imgin {
+            width: 1080px;
+            position: absolute;
+            top: 0px;
+            left: 0px;
+        }
+
+        .imgbg {
+            width: 1080px;
+            position: absolute;
+            top: 0px;
+            left: 0px;
+        }
+
+        .title99 {
+            position: absolute;
+            top: 744px;
+            left: 0px;
+            width: 1058px;
+            overflow: hidden;
+            padding: 10px;
+            font-size: 3rem;
+            line-height: 4rem;
+            font-family: "Anek Gujarati", sans-serif;
+            font-weight: 600;
+            text-align: center;
+            letter-spacing: 0.8;
+            
+        }
+
+        .red {
+            color: #027B5D;
+        }
+
+        .black {
+            color: black;
+        }
+        .BtnSec{
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        #downloadBtn {
+            margin-top: 10px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            width: 100%;
+            background-color:  #027B5D;
+            font-size: 1rem;
+            font-family: "Poppins", sans-serif;
+            color: white;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        #downloadBtnOutline {
+            margin-top: 10px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            width: 100%;
+            background-color:  #FFF;
+            border: 2px solid #027B5D;
+            font-size: 1rem;
+            font-weight: 500;
+            font-family: "Poppins", sans-serif;
+            color: #027B5D;
+            /* border: none; */
+            cursor: pointer;
+        }
+
+        .containerForOutputIMG{
+            background-color: white;
+            padding: 10px;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            border-radius: 8px;
+        }
+
+        #previewImage {
+            display: none;
+            border-radius: 6px;
+            height: 70vh;
+            /* border: 2px solid #027B5D; */
+        }
+
+        @media only screen and (max-width: 800px) {
+            #previewImage {
+            display: none;
+            border-radius: 8px;
+            width: 90vw;
+            height: auto;
+            /* border: 1px solid #027B5D; */
+        }
+        }
+      
+    </style>
+</head>
+<body onload="previewImg();" >
+    
+    <!-- <img class="previewImage" id="previewImage" />
+    <button id="downloadBtn" onclick="downloadImg()">Download</button> -->
+
+    <div class="containerForOutputIMG">
+        <img class="previewImage" id="previewImage" />
+       
+        <div class="BtnSec">
+            <button id="downloadBtnOutline" onclick="backpageBtn()">Back</button>
+            <button id="downloadBtn" onclick="downloadImg()">Download</button>
+        </div>
+    </div>
+
+
+    <div class="containerImg" id="content">
+        <img class="imgin" id="imageOutput" />
+        <img class="imgbg" src="./bg.png" />
+        <p class="title99" id="textOutput"></p>
+    </div>
+
+
+    <script>
+        let imageData;
+        document.addEventListener('DOMContentLoaded', function() {
+            const textOutput = document.getElementById('textOutput');
+            const imageOutput = document.getElementById('imageOutput');
+            const textInput = localStorage.getItem('textInput');
+            const fileInput = localStorage.getItem('fileInput');
+          
+
+            textOutput.innerHTML = getColorizedText(textInput);
+            imageOutput.src = fileInput;
+        });
+
+        function getColorizedText(text) {
+            // console.log(colorCharInput)
+            const colorCharInput = localStorage.getItem('colorCharInput');
+            console.log(colorCharInput)
+
+            const words = text.split(' ');
+            return words.map((word, index) => {
+                const colorClass = word.length > colorCharInput  ? 'red' : 'black';
+                return `<span class="${colorClass}">${word}</span>`;
+            }).join(' ');
+        }
+
+        function previewImg() {
+            const content = document.getElementById('content');
+            html2canvas(content, { width: 1080, height: 1080 }).then(canvas => {
+                const resizedCanvas = document.createElement('canvas');
+                const ctx = resizedCanvas.getContext('2d');
+                resizedCanvas.width = 1080;
+                resizedCanvas.height = 1080;
+                ctx.drawImage(canvas, 0, 0, 1080, 1080);
+                imageData = resizedCanvas.toDataURL('image/png');
+
+                const previewImage = document.getElementById('previewImage');
+                previewImage.src = imageData;
+                previewImage.style.display = 'block';
+
+                content.style.display='none';                
+            });
+        }
+
+        function backpageBtn(){
+            // console.log("Back page jana hai !!")
+            history.back()
+            // console.log("yai Back page hai !!!!")
+        }
+
+        function downloadImg(){
+
+           
+                const link = document.createElement('a');
+                // img name
+                let date =  new Date();
+                const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+            const day = String(date.getDate()).padStart(2, '0');
+
+            // Formatting the time as HH:MM:SS
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+
+                link.download = `${day}-${month}-${year}_${hours}${minutes}${seconds}_output.png`;
+                link.href = imageData;
+                link.click();
+            // });
+
+
+            
+        }
+
+
+      
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</body>
+</html>
